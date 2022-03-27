@@ -214,30 +214,33 @@ fn run() -> Result<()> {
     }
 }
 
-fn pause_and_exit() -> ! {
-    // Close if not in a terminal
+fn pause_and_exit(code: i32) -> ! {
+    // Exit if not running in a terminal
     if !tty::IsTty::is_tty(&stdout()) {
-        exit(1);
+        exit(code);
     }
-    // Auto-close if the user doesn't respnd
-    spawn(|| {
+    // Auto-exit if the user doesn't respnd
+    spawn(move || {
         sleep(Duration::from_secs(10));
         println!("Timed out waiting for response");
-        exit(1);
+        exit(code);
     });
     // Wait for user response...
-    println!("Press any key to continue...");
+    println!("Press any key or wait 10 seconds to continue...");
     terminal::enable_raw_mode().unwrap();
     loop {
         if let Event::Key(_) = event::read().unwrap() {
-            exit(1);
+            exit(code);
         }
     }
 }
 
 fn main() {
-    run().unwrap_or_else(|err| {
-        println!("{err:?}\n");
-        pause_and_exit();
-    });
+    match run() {
+        Ok(_) => pause_and_exit(0),
+        Err(err) => {
+            println!("{err:?}\n");
+            pause_and_exit(1);
+        }
+    }
 }
