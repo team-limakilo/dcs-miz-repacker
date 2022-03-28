@@ -1,15 +1,17 @@
 use anyhow::{anyhow, Context, Result};
+use clap::Parser;
 use config::{read_config, Config, Preset, Weather};
 use crossterm::{
     event::{self, Event},
-    terminal, tty,
+    terminal,
+    tty::IsTty,
 };
 use once_cell::sync::Lazy;
 use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng, Rng};
 use regex::{Captures, Regex, RegexBuilder};
 use std::{
     collections::HashSet,
-    env::{args, set_current_dir},
+    env::set_current_dir,
     fs::{File, OpenOptions},
     io::{self, stdout, Read},
     path::Path,
@@ -202,28 +204,31 @@ fn repack_miz(path: &str, config: &Config) -> Result<()> {
     Ok(())
 }
 
-fn run() -> Result<()> {
-    match args().nth(1) {
-        Some(miz_path) => {
-            set_current_dir(
-                Path::new(&miz_path)
-                    .canonicalize()
-                    .with_context(|| format!("Cannot open {miz_path}"))?
-                    .parent()
-                    .ok_or_else(|| anyhow!("Cannot find base directory from {miz_path}"))?,
-            )?;
-            let config = read_config().context("Failed to read configuration from repack.toml")?;
-            repack_miz(&miz_path, &config).with_context(|| format!("Failed to process {miz_path}"))
-        }
-        None => Err(anyhow!(
-            "Drag and drop a .miz file into the script to run it"
-        )),
-    }
+#[derive(Parser, Debug)]
+#[clap(version)]
+struct Args {
+    miz_path: String,
+
+    /// Run without waiting for user input at the end
+    #[clap(long, short)]
+    batch: bool,
 }
 
-fn pause_and_exit(code: i32) -> ! {
-    // Exit if not running in a terminal
-    if !tty::IsTty::is_tty(&stdout()) {
+fn run(miz_path: &str) -> Result<()> {
+    set_current_dir(
+        Path::new(miz_path)
+            .canonicalize()
+            .with_context(|| format!("Cannot open {miz_path}"))?
+            .parent()
+            .ok_or_else(|| anyhow!("Cannot find base directory from {miz_path}"))?,
+    )?;
+    let config = read_config().context("Failed to read configuration from repack.toml")?;
+    repack_miz(miz_path, &config).with_context(|| format!("Failed to process {miz_path}"))
+}
+
+fn pause_and_exit(code: i32, batch: bool) -> ! {
+    // Exit if not running in a terminal or in non-interactive mode
+    if !stdout().is_tty() || batch {
         exit(code);
     }
     // Auto-exit if the user doesn't respnd
@@ -243,11 +248,19 @@ fn pause_and_exit(code: i32) -> ! {
 }
 
 fn main() {
-    match run() {
-        Ok(_) => pause_and_exit(0),
-        Err(err) => {
-            println!("{err:?}\n");
-            pause_and_exit(1);
+    match Args::try_parse() {
+        Ok(args) => match run(&args.miz_path) {
+            Ok(_) => pause_and_exit(0, args.batch),
+            Err(err) => {
+                println!("{err:?}\n");
+                pause_and_exit(1, args.batch);
+            }
+        },
+        Err(err) if err.use_stderr() => {
+            err.print().unwrap();
+            println!();
+            pause_and_exit(2, false);
         }
+        Err(err) => err.exit(),
     }
 }
