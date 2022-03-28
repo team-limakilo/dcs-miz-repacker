@@ -1,6 +1,7 @@
-on: [push]
+on:
+  - push
 
-name: Continuous integration
+name: Continuous Integration
 
 jobs:
   build:
@@ -19,3 +20,16 @@ jobs:
         with:
           name: dcs-miz-repacker
           path: target/release/dcs-miz-repacker.exe
+  release:
+    name: Release
+    needs: ["build"]
+    runs-on: windows-latest
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: dcs-miz-repacker
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: dcs-miz-repacker.exe
+          token: ${{ secrets.GITHUB_TOKEN }}
