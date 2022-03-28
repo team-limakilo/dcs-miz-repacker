@@ -11,10 +11,10 @@ use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng, Rng};
 use regex::{Captures, Regex, RegexBuilder};
 use std::{
     collections::HashSet,
-    env::set_current_dir,
-    fs::{File, OpenOptions},
-    io::{self, stdout, Read},
-    path::Path,
+    env::{current_exe, set_current_dir},
+    fs::File,
+    io::{self, stdout, BufRead, BufReader, Read, Write},
+    path::{Path, PathBuf},
     process::exit,
     thread::{sleep, spawn},
     time::Duration,
@@ -175,13 +175,7 @@ fn repack_miz(path: &str, config: &Config) -> Result<()> {
                 modify_weather(&out_mission, config.weather.get(preset_name).unwrap(), rng)?;
         }
         println!("-> Writing new miz: {new_path}");
-        let mut zip = ZipWriter::new(
-            OpenOptions::new()
-                .create(true)
-                .write(true)
-                .truncate(true)
-                .open(&new_path)?,
-        );
+        let mut zip = ZipWriter::new(File::create(&new_path)?);
         let mut added_files = HashSet::new();
         // Copy the modified mission file
         add_file(
@@ -201,29 +195,66 @@ fn repack_miz(path: &str, config: &Config) -> Result<()> {
         zip.finish()?;
         println!("-> Done\n");
     }
+    println!("Writing to recent log");
+    let mut recent_file = File::create(recent_file_path()?)?;
+    write!(recent_file, "{}", Path::new(path).canonicalize()?.display())?;
+    recent_file.flush()?;
+    println!("All done!\n");
     Ok(())
+}
+
+fn recent_file_path() -> Result<PathBuf> {
+    current_exe()?
+        .parent()
+        .ok_or_else(|| anyhow!("Cannot find parent folder of exe"))
+        .map(|path| path.join("repacker_recent.txt"))
+}
+
+fn recent_not_found<T>() -> Result<T> {
+    Err(anyhow!(concat!(
+        ".miz file not provided and no recent file was found\n",
+        "Drag and drop a .miz file into the exe to run it"
+    )))
 }
 
 #[derive(Parser, Debug)]
 #[clap(version)]
 struct Args {
-    miz_path: String,
+    miz_path: Option<String>,
 
     /// Run without waiting for user input at the end
     #[clap(long, short)]
     batch: bool,
 }
 
-fn run(miz_path: &str) -> Result<()> {
+fn run(miz_path: &Option<String>) -> Result<()> {
+    // Open either the argument or the most recently opened miz
+    let miz_path = miz_path
+        .as_ref()
+        .map(|miz_path| Ok(miz_path.clone()))
+        .unwrap_or_else(|| -> Result<String> {
+            let recent_path = recent_file_path()?;
+            if !recent_path.is_file() {
+                return recent_not_found();
+            }
+            match BufReader::new(File::open(recent_path)?).lines().next() {
+                Some(Ok(recent)) => {
+                    println!("Trying most recently opened .miz: {recent}");
+                    Ok(recent)
+                }
+                _ => recent_not_found(),
+            }
+        })?;
+    // Switch to the miz directory
     set_current_dir(
-        Path::new(miz_path)
+        Path::new(&miz_path)
             .canonicalize()
             .with_context(|| format!("Cannot open {miz_path}"))?
             .parent()
-            .ok_or_else(|| anyhow!("Cannot find base directory from {miz_path}"))?,
+            .ok_or_else(|| anyhow!("Cannot find parent folder of {miz_path}"))?,
     )?;
     let config = read_config().context("Failed to read configuration from repack.toml")?;
-    repack_miz(miz_path, &config).with_context(|| format!("Failed to process {miz_path}"))
+    repack_miz(&miz_path, &config).with_context(|| format!("Failed to process {miz_path}"))
 }
 
 fn pause_and_exit(code: i32, batch: bool) -> ! {
@@ -234,11 +265,11 @@ fn pause_and_exit(code: i32, batch: bool) -> ! {
     // Auto-exit if the user doesn't respnd
     spawn(move || {
         sleep(Duration::from_secs(10));
-        println!("Timed out waiting for response");
+        eprintln!("Timed out waiting for response");
         exit(code);
     });
     // Wait for user response...
-    println!("Press any key or wait 10 seconds to continue...");
+    eprintln!("Press any key or wait 10 seconds to continue...");
     terminal::enable_raw_mode().unwrap();
     loop {
         if let Event::Key(_) = event::read().unwrap() {
@@ -252,13 +283,13 @@ fn main() {
         Ok(args) => match run(&args.miz_path) {
             Ok(_) => pause_and_exit(0, args.batch),
             Err(err) => {
-                println!("{err:?}\n");
+                eprintln!("{err:?}\n");
                 pause_and_exit(1, args.batch);
             }
         },
         Err(err) if err.use_stderr() => {
             err.print().unwrap();
-            println!();
+            eprintln!();
             pause_and_exit(2, false);
         }
         Err(err) => err.exit(),
