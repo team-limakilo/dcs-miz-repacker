@@ -9,7 +9,7 @@ use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng, Rng};
 use regex::{Captures, Regex, RegexBuilder};
 use std::{
     collections::HashSet,
-    env::args,
+    env::{args, set_current_dir},
     fs::{File, OpenOptions},
     io::{self, stdout, Read},
     path::Path,
@@ -203,10 +203,17 @@ fn repack_miz(path: &str, config: &Config) -> Result<()> {
 }
 
 fn run() -> Result<()> {
-    let config = read_config().context("Failed to read configuration from repack.toml")?;
     match args().nth(1) {
         Some(miz_path) => {
-            repack_miz(&miz_path, &config).context(format!("Failed to process {miz_path}"))
+            set_current_dir(
+                Path::new(&miz_path)
+                    .canonicalize()
+                    .with_context(|| format!("Cannot open {miz_path}"))?
+                    .parent()
+                    .ok_or_else(|| anyhow!("Cannot find base directory from {miz_path}"))?,
+            )?;
+            let config = read_config().context("Failed to read configuration from repack.toml")?;
+            repack_miz(&miz_path, &config).with_context(|| format!("Failed to process {miz_path}"))
         }
         None => Err(anyhow!(
             "Drag and drop a .miz file into the script to run it"
