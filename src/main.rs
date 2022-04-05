@@ -1,14 +1,19 @@
+mod config;
+mod time;
+mod weather;
+
+use crate::{time::modify_time, weather::modify_weather};
 use anyhow::{anyhow, Context, Result};
 use clap::Parser;
-use config::{read_config, Config, Preset, Weather};
+use config::{read_config, Config};
 use crossterm::{
     event::{self, Event},
     terminal,
     tty::IsTty,
 };
 use once_cell::sync::Lazy;
-use rand::{rngs::ThreadRng, seq::SliceRandom, thread_rng, Rng};
-use regex::{Captures, Regex, RegexBuilder};
+use rand::{seq::SliceRandom, thread_rng};
+use regex::{Captures, Regex};
 use std::{
     collections::HashSet,
     env::{current_exe, set_current_dir},
@@ -22,8 +27,6 @@ use std::{
 use walkdir::WalkDir;
 use zip::{write::FileOptions, ZipArchive, ZipWriter};
 
-mod config;
-
 fn splice_filename(path: &str, new_suffix: &str) -> Result<String> {
     static REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^(.+)\.(.+)$").unwrap());
     if REGEX.is_match(path) {
@@ -34,76 +37,6 @@ fn splice_filename(path: &str, new_suffix: &str) -> Result<String> {
             .into_owned())
     } else {
         Err(anyhow!("File extension missing"))
-    }
-}
-
-fn modify_weather(mission: &str, weather: &Weather, rng: &mut ThreadRng) -> Result<String> {
-    static PRESET_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(\["preset"\]) = ".+","#).unwrap());
-    static BASE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(\["base"\]) = \d+,"#).unwrap());
-    let cloud_base = rng.gen_range(weather.cloud_base_min..=weather.cloud_base_max);
-    // Cloud preset
-    if !PRESET_RE.is_match(mission) {
-        return Err(anyhow!("Could not find cloud preset key in mission file"));
-    }
-    println!("   Cloud preset: {}", weather.cloud_preset);
-    let mission = PRESET_RE.replace(mission, |cap: &Captures| {
-        format!("{} = \"{}\",", &cap[1], weather.cloud_preset)
-    });
-    // Cloud base
-    if !BASE_RE.is_match(&mission) {
-        return Err(anyhow!("Could not find cloud base key in mission file"));
-    }
-    println!("   Cloud base:   {}", cloud_base);
-    let mission = BASE_RE.replace(&mission, |cap: &Captures| {
-        format!("{} = {},", &cap[1], cloud_base)
-    });
-    Ok(mission.into_owned())
-}
-
-fn modify_time(mission: &str, preset: &Preset) -> Result<String> {
-    // Note: we HAVE to replace the entry that is indented by exactly 4, because there
-    // are other keys named "start_time" which we DON'T want to replace.
-    static TIME_RE: Lazy<Regex> = Lazy::new(|| {
-        RegexBuilder::new(r#"^(    \["start_time"\]) = \d+,$"#)
-            .multi_line(true)
-            .build()
-            .unwrap()
-    });
-    let mut time = preset.time.splitn(3, ':');
-    if true {
-        let mut hours: i32 = time
-            .next()
-            .map(str::parse)
-            .ok_or_else(|| anyhow!("Time is empty"))?
-            .context(format!("cannot read hours from time {}", preset.time))?;
-        let mut minutes: i32 = time
-            .next()
-            .map(str::parse)
-            .unwrap_or(Ok(0))
-            .context(format!("cannot read minutes from time {}", preset.time))?;
-        let mut seconds: i32 = time
-            .next()
-            .map(str::parse)
-            .unwrap_or(Ok(0))
-            .context(format!("cannot read seconds from time {}", preset.time))?;
-        // Normalize the time value like some cheap microwave
-        minutes += seconds / 60;
-        seconds %= 60;
-        hours += minutes / 60;
-        minutes %= 60;
-        hours %= 24;
-        if !TIME_RE.is_match(mission) {
-            return Err(anyhow!("Could not find start_time key in mission file"));
-        }
-        println!("   Start time: {:02}:{:02}:{:02}", hours, minutes, seconds);
-        Ok(TIME_RE
-            .replace(mission, |cap: &Captures| {
-                // And de-normalize it back into seconds
-                format!("{} = {},", &cap[1], hours * 3600 + minutes * 60 + seconds)
-            })
-            .into_owned())
-    } else {
-        Err(anyhow!("Invalid time format: {}", preset.time))
     }
 }
 
@@ -171,8 +104,7 @@ fn repack_miz(path: &str, config: &Config) -> Result<()> {
             let preset_name = weather_presets
                 .choose_weighted(rng, |weather| config.weather.get(weather).unwrap().weight)?;
             println!("-> Using weather preset: {preset_name}");
-            out_mission =
-                modify_weather(&out_mission, config.weather.get(preset_name).unwrap(), rng)?;
+            out_mission = modify_weather(out_mission, config.weather.get(preset_name).unwrap())?;
         }
         println!("-> Writing new miz: {new_path}");
         let mut zip = ZipWriter::new(File::create(&new_path)?);
