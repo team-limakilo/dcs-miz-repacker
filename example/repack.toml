@@ -28,7 +28,11 @@ weather = ["light_scattered_1", "light_scattered_2",
 cloud_preset = "Preset1"
 cloud_base_min = 1500 # Min 840
 cloud_base_max = 4200 # Max 4200
-weight = 1
+temp_min = 25
+temp_max = 40
+qnh_min = 760
+qnh_max = 768
+weight = 2
 
 # Two Layers Few and Scattered
 # METAR:FEW/SCT 8/10 SCT 23/24
@@ -36,7 +40,11 @@ weight = 1
 cloud_preset = "Preset2"
 cloud_base_min = 1500 # Min 1260
 cloud_base_max = 2520 # Max 2520
-weight = 1
+temp_min = 25
+temp_max = 40
+qnh_min = 760
+qnh_max = 768
+weight = 2
 
 # Two Layer Scattered
 # METAR:SCT 8/9 FEW 21
@@ -44,7 +52,11 @@ weight = 1
 cloud_preset = "Preset3"
 cloud_base_min = 1500 # Min 840
 cloud_base_max = 2520 # Max 2520
-weight = 1
+temp_min = 25
+temp_max = 40
+qnh_min = 760
+qnh_max = 768
+weight = 2
 
 # Two Layer Scattered
 # METAR:SCT 8/10 FEW/SCT 24/26
@@ -52,7 +64,11 @@ weight = 1
 cloud_preset = "Preset4"
 cloud_base_min = 1260 # Min 1260
 cloud_base_max = 2520 # Max 2520
-weight = 1
+temp_min = 25
+temp_max = 40
+qnh_min = 760
+qnh_max = 768
+weight = 2
 
 # Three Layer High altitude Scattered
 # METAR:SCT 14/17 FEW 27/29 BKN 40
@@ -60,7 +76,11 @@ weight = 1
 cloud_preset = "Preset5"
 cloud_base_min = 1260 # Min 1260
 cloud_base_max = 4620 # Max 4620
-weight = 1
+temp_min = 25
+temp_max = 40
+qnh_min = 760
+qnh_max = 768
+weight = 2
 
 # One Layer Scattered/Broken
 # METAR:SCT/BKN 8/10 FEW 40
@@ -68,6 +88,10 @@ weight = 1
 cloud_preset = "Preset6"
 cloud_base_min = 1260 # Min 1260
 cloud_base_max = 4200 # Max 4200
+temp_min = 25
+temp_max = 35
+qnh_min = 755
+qnh_max = 768
 weight = 1
 
 # Two Layer Scattered/Broken
@@ -76,6 +100,10 @@ weight = 1
 cloud_preset = "Preset7"
 cloud_base_min = 1680 # Min 1680
 cloud_base_max = 5040 # Max 5040
+temp_min = 25
+temp_max = 35
+qnh_min = 755
+qnh_max = 768
 weight = 1
 
 # Two Layer Scattered/Broken High Altitude
@@ -84,6 +112,10 @@ weight = 1
 cloud_preset = "Preset8"
 cloud_base_min = 3780 # Min 3780
 cloud_base_max = 5460 # Max 5460
+temp_min = 25
+temp_max = 35
+qnh_min = 755
+qnh_max = 768
 weight = 1
 
 # Two Layer Broken/Scattered
@@ -92,6 +124,10 @@ weight = 1
 cloud_preset = "Preset9"
 cloud_base_min = 1680 # Min 1680
 cloud_base_max = 3780 # Max 3780
+temp_min = 25
+temp_max = 35
+qnh_min = 755
+qnh_max = 768
 weight = 1
 
 # Two Layers Scattered Large Thick Clouds
@@ -100,6 +136,10 @@ weight = 1
 cloud_preset = "Preset10"
 cloud_base_min = 1500 # Min 1260
 cloud_base_max = 4200 # Max 4200
+temp_min = 25
+temp_max = 35
+qnh_min = 755
+qnh_max = 768
 weight = 1
 
 # Two Layers Scattered Large Clouds High Ceiling
@@ -108,6 +148,10 @@ weight = 1
 cloud_preset = "Preset11"
 cloud_base_min = 2520 # Min 2520
 cloud_base_max = 5460 # Max 5460
+temp_min = 25
+temp_max = 35
+qnh_min = 755
+qnh_max = 768
 weight = 1
 
 # Two Layers Scattered Large Clouds High Ceiling
@@ -116,6 +160,10 @@ weight = 1
 cloud_preset = "Preset12"
 cloud_base_min = 1680 # Min 1680
 cloud_base_max = 3360 # Max 3360
+temp_min = 25
+temp_max = 35
+qnh_min = 755
+qnh_max = 768
 weight = 1
 
 # Two Layers Broken Clouds
@@ -124,7 +172,11 @@ weight = 1
 cloud_preset = "Preset13"
 cloud_base_min = 1680 # Min 1680
 cloud_base_max = 3360 # Max 3360
-weight = 1
+temp_min = 25
+temp_max = 35
+qnh_min = 755
+qnh_max = 768
+weight = 0.5
 
 # Broken Thick Low Layer with Few High Layer
 # METAR:BKN LYR 7/16 FEW 41
@@ -132,7 +184,11 @@ weight = 1
 cloud_preset = "Preset14"
 cloud_base_min = 1680 # Min 1680
 cloud_base_max = 3360 # Max 3360
-weight = 1
+temp_min = 25
+temp_max = 30
+qnh_min = 750
+qnh_max = 768
+weight = 0.5
 
 # Two Layers Broken Large Clouds
 # METAR:SCT/BKN 14/18 BKN 24/27 FEW 40
@@ -140,7 +196,11 @@ weight = 1
 cloud_preset = "Preset15"
 cloud_base_min = 1500 # Min 840
 cloud_base_max = 5040 # Max 5040
-weight = 1
+temp_min = 25
+temp_max = 30
+qnh_min = 750
+qnh_max = 768
+weight = 0.5
 
 # Two Layers Broken Large Clouds
 # METAR:BKN 14/18 BKN 28/30 FEW 40
@@ -148,7 +208,11 @@ weight = 1
 cloud_preset = "Preset16"
 cloud_base_min = 1500 # Min 1260
 cloud_base_max = 4200 # Max 4200
-weight = 1
+temp_min = 25
+temp_max = 30
+qnh_min = 750
+qnh_max = 768
+weight = 0.5
 
 # Three Layers Broken/Overcast
 # METAR:BKN/OVC LYR 7/13 20/22 32/34
@@ -156,7 +220,11 @@ weight = 1
 cloud_preset = "Preset17"
 cloud_base_min = 1500 # Min 0
 cloud_base_max = 2520 # Max 2520
-weight = 1
+temp_min = 25
+temp_max = 30
+qnh_min = 750
+qnh_max = 760
+weight = 0.5
 
 # Three Layers Broken/Overcast
 # METAR:BKN/OVC LYR 13/15 25/29 38/41
@@ -164,31 +232,47 @@ weight = 1
 cloud_preset = "Preset18"
 cloud_base_min = 1500 # Min 0
 cloud_base_max = 3780 # Max 3780
-weight = 1
+temp_min = 25
+temp_max = 30
+qnh_min = 750
+qnh_max = 760
+weight = 0.5
 
 # Three Layers Overcast At Low Level
 # METAR:OVC 9/16 BKN/OVC LYR 23/24 31/33
 [weather.broken_7]
 cloud_preset = "Preset19"
-cloud_base_min = 1900 # Min 0
+cloud_base_min = 1500 # Min 0
 cloud_base_max = 2940 # Max 2940
-weight = 1
+temp_min = 20
+temp_max = 30
+qnh_min = 750
+qnh_max = 760
+weight = 0.5
 
 # Three Layers Overcast Low Level
 # METAR:BKN/OVC 13/18 BKN 28/30 SCT FEW 38
 [weather.broken_8]
 cloud_preset = "Preset20"
-cloud_base_min = 1900 # Min 0
+cloud_base_min = 1500 # Min 0
 cloud_base_max = 3780 # Max 3780
-weight = 1
+temp_min = 20
+temp_max = 30
+qnh_min = 750
+qnh_max = 760
+weight = 0.5
 
 # Overcast low level
 # METAR:BKN/OVC LYR 7/8 17/19
 [weather.overcast_1]
 cloud_preset = "Preset21"
-cloud_base_min = 1260 # Min 1260
+cloud_base_min = 1500 # Min 1260
 cloud_base_max = 4200 # Max 4200
-weight = 1
+temp_min = 20
+temp_max = 30
+qnh_min = 750
+qnh_max = 760
+weight = 0.5
 
 # Overcast low Level
 # METAR:BKN LYR 7/10 17/20
@@ -196,7 +280,11 @@ weight = 1
 cloud_preset = "Preset22"
 cloud_base_min = 1500 # Min 420
 cloud_base_max = 4200 # Max 4200
-weight = 1
+temp_min = 20
+temp_max = 30
+qnh_min = 750
+qnh_max = 760
+weight = 0.5
 
 # Three Layer Broken Low Level Scattered High
 # METAR:BKN LYR 11/14 18/25 SCT 32/35
@@ -204,6 +292,10 @@ weight = 1
 cloud_preset = "Preset23"
 cloud_base_min = 1500 # Min 840
 cloud_base_max = 3360 # Max 3360
+temp_min = 20
+temp_max = 30
+qnh_min = 750
+qnh_max = 760
 weight = 1
 
 # Three Layer Overcast
@@ -212,7 +304,11 @@ weight = 1
 cloud_preset = "Preset24"
 cloud_base_min = 1500 # Min 420 
 cloud_base_max = 2520 # Max 2520
-weight = 1
+temp_min = 20
+temp_max = 30
+qnh_min = 750
+qnh_max = 760
+weight = 0.5
 
 # Three Layer Overcast
 # METAR:OVC LYR 12/14 22/25 40/42
@@ -220,7 +316,11 @@ weight = 1
 cloud_preset = "Preset25"
 cloud_base_min = 1500 # Min 420
 cloud_base_max = 3360 # Max 3360
-weight = 1
+temp_min = 20
+temp_max = 30
+qnh_min = 750
+qnh_max = 760
+weight = 0.5
 
 # Three Layer Overcast
 # METAR:OVC 9/15 BKN 23/25 SCT 32
@@ -228,7 +328,11 @@ weight = 1
 cloud_preset = "Preset26"
 cloud_base_min = 1500 # Min 420
 cloud_base_max = 2940 # Max 2940
-weight = 1
+temp_min = 20
+temp_max = 30
+qnh_min = 750
+qnh_max = 760
+weight = 0.5
 
 # Three Layer Overcast
 # METAR:OVC 8/15 SCT/BKN 25/26 34/36
@@ -236,7 +340,11 @@ weight = 1
 cloud_preset = "Preset27"
 cloud_base_min = 1500 # Min 420
 cloud_base_max = 2520 # Max 2520
-weight = 1
+temp_min = 20
+temp_max = 30
+qnh_min = 750
+qnh_max = 760
+weight = 0.5
 
 # Overcast with Rain
 # METAR:VIS 3-5KM RA OVC 3/15 28/30 FEW 40
@@ -244,6 +352,10 @@ weight = 1
 cloud_preset = "RainyPreset1"
 cloud_base_min = 2940 # Min 420
 cloud_base_max = 2940 # Max 2940
+temp_min = 20
+temp_max = 30
+qnh_min = 750
+qnh_max = 755
 weight = 1
 
 # Overcast with Rain
@@ -252,7 +364,11 @@ weight = 1
 cloud_preset = "RainyPreset2"
 cloud_base_min = 2520 # Min 840
 cloud_base_max = 2520 # Max 2520
-weight = 1
+temp_min = 20
+temp_max = 30
+qnh_min = 745
+qnh_max = 750
+weight = 0.5
 
 # Overcast with Rain
 # METAR:VIS 3-5KM RA OVC LYR 6/18 19/21 SCT 34
@@ -260,4 +376,8 @@ weight = 1
 cloud_preset = "RainyPreset3"
 cloud_base_min = 2520 # Min 840
 cloud_base_max = 2520 # Max 2520
+temp_min = 20
+temp_max = 30
+qnh_min = 745
+qnh_max = 750
 weight = 0 # Disabled, too low visiblity
