@@ -264,12 +264,12 @@ fn pause_and_exit(code: i32, batch: bool) -> ! {
     }
     // Auto-exit if the user doesn't respnd
     spawn(move || {
-        sleep(Duration::from_secs(10));
+        sleep(Duration::from_secs(30));
         eprintln!("Timed out waiting for response");
         exit(code);
     });
     // Wait for user response...
-    eprintln!("Press any key or wait 10 seconds to continue...");
+    eprintln!("Press any key or wait 30 seconds to continue...");
     terminal::enable_raw_mode().unwrap();
     loop {
         if let Event::Key(_) = event::read().unwrap() {
