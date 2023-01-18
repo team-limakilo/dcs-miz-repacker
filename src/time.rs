@@ -31,7 +31,7 @@ pub fn modify_time(mission: &str, preset: &Preset, dry_run: bool) -> Result<Stri
             .unwrap_or(Ok(0))
             .context(format!("cannot read seconds from time {}", preset.time))?;
 
-        // Normalize the time value like some cheap microwave
+        // Normalize the time value by allowing overflow
         minutes += seconds / 60;
         seconds %= 60;
         hours += minutes / 60;
