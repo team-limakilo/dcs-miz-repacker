@@ -27,7 +27,11 @@ use std::{
 use walkdir::WalkDir;
 use zip::{write::FileOptions, ZipArchive, ZipWriter};
 
-fn splice_filename(path: &str, new_suffix: &str) -> Result<String> {
+fn splice_filename(path: &str, new_suffix: &str, dry_run: bool) -> Result<String> {
+    if dry_run {
+        return Ok(String::from(path));
+    }
+
     static REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^(.+)\.(.+)$").unwrap());
     if REGEX.is_match(path) {
         Ok(REGEX
@@ -81,19 +85,32 @@ fn add_repack_files(zip: &mut ZipWriter<File>, added_files: &mut HashSet<String>
     Ok(())
 }
 
-fn repack_miz(path: &str, config: &Config) -> Result<()> {
+fn repack_miz(path: &str, config: &Config, dry_run: bool) -> Result<()> {
     println!("Processing {path}...");
-    let rng = &mut thread_rng();
-    let mut archive = ZipArchive::new(File::open(path)?)?;
     let mut mission = String::new();
-    archive.by_name("mission")?.read_to_string(&mut mission)?;
+    let mut archive;
+    let rng = &mut thread_rng();
+
+    if dry_run {
+        archive = None;
+    } else {
+        archive = Some(ZipArchive::new(File::open(path)?)?);
+        archive
+            .as_mut()
+            .unwrap()
+            .by_name("mission")?
+            .read_to_string(&mut mission)?;
+    }
+
     // Un-mut the value to avoid accidental changes
     let mission = mission;
+
     for (name, preset) in &config.preset {
-        let new_path = splice_filename(path, name)?;
+        let new_path = splice_filename(path, name, dry_run)?;
         let mut out_mission = mission.clone();
         println!("-> Generating miz preset: {name}");
-        out_mission = modify_time(&out_mission, preset)?;
+        out_mission = modify_time(&out_mission, preset, dry_run)?;
+
         // Optionally, modify weather settings in the mission
         if let Some(weather_presets) = &preset.weather {
             for preset_name in weather_presets {
@@ -101,36 +118,52 @@ fn repack_miz(path: &str, config: &Config) -> Result<()> {
                     return Err(anyhow!("Weather preset not found: {preset_name}"));
                 }
             }
+
             let preset_name = weather_presets
                 .choose_weighted(rng, |weather| config.weather.get(weather).unwrap().weight)?;
+
             println!("-> Using weather preset: {preset_name}");
-            out_mission = modify_weather(out_mission, config.weather.get(preset_name).unwrap())?;
+            let weather = config.weather.get(preset_name).unwrap();
+
+            out_mission = modify_weather(out_mission, weather, dry_run)?;
         }
-        println!("-> Writing new miz: {new_path}");
-        let mut zip = ZipWriter::new(File::create(&new_path)?);
-        let mut added_files = HashSet::new();
-        // Copy the modified mission file
-        add_file(
-            &mut zip,
-            "mission",
-            &mut out_mission.as_bytes(),
-            &mut added_files,
-        )?;
-        // Copy files from the repack dir
-        add_repack_files(&mut zip, &mut added_files)?;
-        // Copy remaining files into the new zip
-        for idx in 0..archive.len() {
-            let mut file = archive.by_index(idx)?;
-            let path = file.name().to_owned();
-            add_file(&mut zip, &path, &mut file, &mut added_files)?;
+
+        if !dry_run {
+            println!("-> Writing new miz: {new_path}");
+            let mut zip = ZipWriter::new(File::create(&new_path)?);
+            let mut added_files = HashSet::new();
+            let archive = archive.as_mut().unwrap();
+
+            // Copy the modified mission file
+            add_file(
+                &mut zip,
+                "mission",
+                &mut out_mission.as_bytes(),
+                &mut added_files,
+            )?;
+
+            // Copy files from the repack dir
+            add_repack_files(&mut zip, &mut added_files)?;
+
+            // Copy remaining miz files into the new zip
+            for idx in 0..archive.len() {
+                let mut file = archive.by_index(idx)?;
+                let path = file.name().to_owned();
+                add_file(&mut zip, &path, &mut file, &mut added_files)?;
+            }
+
+            zip.finish()?;
         }
-        zip.finish()?;
         println!("-> Done\n");
     }
-    println!("Writing to recent log");
-    let mut recent_file = File::create(recent_file_path()?)?;
-    write!(recent_file, "{}", Path::new(path).canonicalize()?.display())?;
-    recent_file.flush()?;
+
+    if !dry_run {
+        println!("Writing current path to most recently accessed file...");
+        let mut recent_file = File::create(recent_file_path()?)?;
+        write!(recent_file, "{}", Path::new(path).canonicalize()?.display())?;
+        recent_file.flush()?;
+    }
+
     println!("All done!\n");
     Ok(())
 }
@@ -142,7 +175,7 @@ fn recent_file_path() -> Result<PathBuf> {
         .map(|path| path.join("repacker_recent.txt"))
 }
 
-fn recent_not_found<T>() -> Result<T> {
+fn miz_not_found_error<T>() -> Result<T> {
     Err(anyhow!(concat!(
         ".miz file not provided and no recent file was found\n",
         "Drag and drop a .miz file into the exe to run it"
@@ -154,12 +187,22 @@ fn recent_not_found<T>() -> Result<T> {
 struct Args {
     miz_path: Option<String>,
 
-    /// Run without waiting for user input at the end
+    /// Run and then exit immediately, without waiting for user input at the end
     #[clap(long, short)]
     batch: bool,
+
+    /// Run without actually reading or writing any miz file
+    #[clap(long, short)]
+    dry_run: bool,
 }
 
-fn run(miz_path: &Option<String>) -> Result<()> {
+fn run(miz_path: &Option<String>, dry_run: bool) -> Result<()> {
+    let config = read_config().context("Failed to read configuration from repack.toml")?;
+
+    if dry_run {
+        return repack_miz("dry run", &config, true);
+    }
+
     // Open either the argument or the most recently opened miz
     let miz_path = miz_path
         .as_ref()
@@ -167,16 +210,17 @@ fn run(miz_path: &Option<String>) -> Result<()> {
         .unwrap_or_else(|| -> Result<String> {
             let recent_path = recent_file_path()?;
             if !recent_path.is_file() {
-                return recent_not_found();
+                return miz_not_found_error();
             }
             match BufReader::new(File::open(recent_path)?).lines().next() {
                 Some(Ok(recent)) => {
                     println!("Trying most recently opened .miz: {recent}");
                     Ok(recent)
                 }
-                _ => recent_not_found(),
+                _ => miz_not_found_error(),
             }
         })?;
+
     // Switch to the miz directory
     set_current_dir(
         Path::new(&miz_path)
@@ -185,8 +229,8 @@ fn run(miz_path: &Option<String>) -> Result<()> {
             .parent()
             .ok_or_else(|| anyhow!("Cannot find parent folder of {miz_path}"))?,
     )?;
-    let config = read_config().context("Failed to read configuration from repack.toml")?;
-    repack_miz(&miz_path, &config).with_context(|| format!("Failed to process {miz_path}"))
+
+    repack_miz(&miz_path, &config, false).with_context(|| format!("Failed to process {miz_path}"))
 }
 
 fn pause_and_exit(code: i32, batch: bool) -> ! {
@@ -212,7 +256,7 @@ fn pause_and_exit(code: i32, batch: bool) -> ! {
 
 fn main() {
     match Args::try_parse() {
-        Ok(args) => match run(&args.miz_path) {
+        Ok(args) => match run(&args.miz_path, args.dry_run) {
             Ok(_) => pause_and_exit(0, args.batch),
             Err(err) => {
                 eprintln!("{err:?}\n");

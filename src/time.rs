@@ -3,7 +3,7 @@ use anyhow::{anyhow, Context, Result};
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex, RegexBuilder};
 
-pub fn modify_time(mission: &str, preset: &Preset) -> Result<String> {
+pub fn modify_time(mission: &str, preset: &Preset, dry_run: bool) -> Result<String> {
     // Note: we HAVE to replace the entry that is indented by exactly 4 spaces, because
     // there are other keys named "start_time" which we DON'T want to replace.
     static REGEX: Lazy<Regex> = Lazy::new(|| {
@@ -12,6 +12,7 @@ pub fn modify_time(mission: &str, preset: &Preset) -> Result<String> {
             .build()
             .unwrap()
     });
+
     let mut time = preset.time.splitn(3, ':');
     if true {
         let mut hours: i32 = time
@@ -29,15 +30,17 @@ pub fn modify_time(mission: &str, preset: &Preset) -> Result<String> {
             .map(str::parse)
             .unwrap_or(Ok(0))
             .context(format!("cannot read seconds from time {}", preset.time))?;
+
         // Normalize the time value like some cheap microwave
         minutes += seconds / 60;
         seconds %= 60;
         hours += minutes / 60;
         minutes %= 60;
         hours %= 24;
-        if !REGEX.is_match(mission) {
+        if !dry_run && !REGEX.is_match(mission) {
             return Err(anyhow!("Could not find start_time key in mission file"));
         }
+
         println!("   Start time: {:02}:{:02}:{:02}", hours, minutes, seconds);
         Ok(REGEX
             .replace(mission, |cap: &Captures| {

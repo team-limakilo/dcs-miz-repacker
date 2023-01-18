@@ -59,6 +59,8 @@ impl Weather {
 
 pub fn read_config() -> Result<Config> {
     let mut data = Vec::new();
-    File::open("repack.toml")?.read_to_end(&mut data)?;
+    File::open("repack.toml")
+        .or_else(|original_error| File::open("example/repack.toml").map_err(|_| original_error))?
+        .read_to_end(&mut data)?;
     Ok(toml::from_slice(&data)?)
 }
