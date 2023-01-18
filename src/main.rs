@@ -185,6 +185,9 @@ fn miz_not_found_error<T>() -> Result<T> {
 #[derive(Parser, Debug)]
 #[clap(version)]
 struct Args {
+    /// Optional: relative or absolute path of the DCS mission file to repack
+    ///
+    /// If the path is missing, the last repacked miz, as recorded in `repacker_recent.txt`, is used instead
     miz_path: Option<String>,
 
     /// Run and then exit immediately, without waiting for user input at the end
