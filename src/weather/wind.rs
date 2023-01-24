@@ -8,12 +8,12 @@ macro_rules! wind_regex {
     ($altitude:literal, $attribute:literal) => {
         Lazy::new(|| {
             let regex_str = concat!(
-                r#"(\s{12}\["#,
+                r#"(?s)(\s{12}\[""#,
                 $altitude,
-                r#"\] =.+"#,
-                r#"\s{16}\["#,
+                r#""\] =.+?"#,
+                r#"\n\s{16}\[""#,
                 $attribute,
-                r#"]) = \d+,"#
+                r#""\]) = \d+,"#
             );
             Regex::new(&regex_str).unwrap()
         })
@@ -70,8 +70,8 @@ pub fn modify_2000m_wind<'a>(
     wind_2000m_speed: &mut f64,
     dry_run: bool,
 ) -> Result<Cow<'a, str>> {
-    static SPEED_REGEX: Lazy<Regex> = wind_regex!("at2000m", "speed");
-    static HEADING_REGEX: Lazy<Regex> = wind_regex!("at2000m", "dir");
+    static SPEED_REGEX: Lazy<Regex> = wind_regex!("at2000", "speed");
+    static HEADING_REGEX: Lazy<Regex> = wind_regex!("at2000", "dir");
 
     let mut mission = Cow::Borrowed(mission);
 
@@ -113,8 +113,8 @@ pub fn modify_8000m_wind<'a>(
     wind_2000m_speed: f64,
     dry_run: bool,
 ) -> Result<Cow<'a, str>> {
-    static SPEED_REGEX: Lazy<Regex> = wind_regex!("at8000m", "speed");
-    static HEADING_REGEX: Lazy<Regex> = wind_regex!("at8000m", "dir");
+    static SPEED_REGEX: Lazy<Regex> = wind_regex!("at8000", "speed");
+    static HEADING_REGEX: Lazy<Regex> = wind_regex!("at8000", "dir");
 
     let mut mission = Cow::Borrowed(mission);
 
