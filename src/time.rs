@@ -41,7 +41,7 @@ pub fn modify_time(mission: &str, preset: &Preset, dry_run: bool) -> Result<Stri
             return Err(anyhow!("Could not find start_time key in mission file"));
         }
 
-        println!("   Start time: {:02}:{:02}:{:02}", hours, minutes, seconds);
+        println!("   Start time:            {:02}:{:02}:{:02}", hours, minutes, seconds);
         Ok(REGEX
             .replace(mission, |cap: &Captures| {
                 // And de-normalize it back into seconds

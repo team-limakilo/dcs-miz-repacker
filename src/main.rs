@@ -27,6 +27,10 @@ use std::{
 use walkdir::WalkDir;
 use zip::{write::FileOptions, ZipArchive, ZipWriter};
 
+pub fn flip_heading(heading: i32) -> i32 {
+    (heading + 180) % 360
+}
+
 fn splice_filename(path: &str, new_suffix: &str, dry_run: bool) -> Result<String> {
     if dry_run {
         return Ok(String::from(path));
@@ -85,7 +89,7 @@ fn add_repack_files(zip: &mut ZipWriter<File>, added_files: &mut HashSet<String>
     Ok(())
 }
 
-fn repack_miz(path: &str, config: &Config, dry_run: bool) -> Result<()> {
+fn repack_miz(path: &str, mut config: Config, dry_run: bool) -> Result<()> {
     println!("Processing {path}...");
     let mut mission = String::new();
     let mut archive;
@@ -122,10 +126,15 @@ fn repack_miz(path: &str, config: &Config, dry_run: bool) -> Result<()> {
             let preset_name = weather_presets
                 .choose_weighted(rng, |weather| config.weather.get(weather).unwrap().weight)?;
 
-            println!("-> Using weather preset: {preset_name}");
-            let weather = config.weather.get(preset_name).unwrap();
+            println!("-> Using weather preset:  {preset_name}");
+            let weather = config.weather.get_mut(preset_name).unwrap();
 
-            out_mission = modify_weather(out_mission, weather, dry_run)?;
+            weather.randomize_wind_flip();
+            if preset.flip_wind {
+                weather.is_wind_flipped = !weather.is_wind_flipped
+            }
+
+            out_mission = modify_weather(out_mission, preset_name, weather, dry_run)?;
         }
 
         if !dry_run {
@@ -202,8 +211,10 @@ struct Args {
 fn run(miz_path: &Option<String>, dry_run: bool) -> Result<()> {
     let config = read_config().context("Failed to read configuration from repack.toml")?;
 
+    println!("{config:#?}");
+
     if dry_run {
-        return repack_miz("dry run", &config, true);
+        return repack_miz("dry run", config, true);
     }
 
     // Open either the argument or the most recently opened miz
@@ -233,7 +244,7 @@ fn run(miz_path: &Option<String>, dry_run: bool) -> Result<()> {
             .ok_or_else(|| anyhow!("Cannot find parent folder of {miz_path}"))?,
     )?;
 
-    repack_miz(&miz_path, &config, false).with_context(|| format!("Failed to process {miz_path}"))
+    repack_miz(&miz_path, config, false).with_context(|| format!("Failed to process {miz_path}"))
 }
 
 fn pause_and_exit(code: i32, batch: bool) -> ! {

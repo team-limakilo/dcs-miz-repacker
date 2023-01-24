@@ -1,78 +1,30 @@
 use crate::config::Weather;
-use anyhow::{anyhow, Result};
-use once_cell::sync::Lazy;
-use regex::{Captures, Regex};
-use std::borrow::Cow;
+use anyhow::Result;
 
-fn modify_cloud_preset<'a>(
-    mission: &'a str,
+mod clouds;
+mod misc;
+mod wind;
+
+pub fn modify_weather(
+    mission: String,
+    preset_name: &str,
     weather: &Weather,
     dry_run: bool,
-) -> Result<Cow<'a, str>> {
-    static REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(\["preset"\]) = ".+","#).unwrap());
-    if !dry_run && !REGEX.is_match(mission) {
-        return Err(anyhow!("Could not find cloud preset in mission file"));
-    }
-    println!("   Cloud preset: {}", weather.cloud_preset);
-    Ok(REGEX.replace(mission, |cap: &Captures| {
-        format!("{} = \"{}\",", &cap[1], weather.cloud_preset)
-    }))
-}
-
-fn modify_cloud_base<'a>(
-    mission: &'a str,
-    weather: &Weather,
-    dry_run: bool,
-) -> Result<Cow<'a, str>> {
-    static REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(\["base"\]) = \d+,"#).unwrap());
-    if let Some(cloud_base) = weather.random_cloud_base() {
-        if !dry_run && !REGEX.is_match(mission) {
-            return Err(anyhow!("Could not find cloud base key in mission file"));
-        }
-        println!("   Cloud base:   {}", cloud_base);
-        Ok(REGEX.replace(mission, |cap: &Captures| {
-            format!("{} = {},", &cap[1], cloud_base)
-        }))
-    } else {
-        Ok(Cow::Borrowed(mission))
-    }
-}
-
-fn modify_temp<'a>(mission: &'a str, weather: &Weather, dry_run: bool) -> Result<Cow<'a, str>> {
-    static REGEX: Lazy<Regex> =
-        Lazy::new(|| Regex::new(r#"(\["temperature"\]) = [\d\.]+,"#).unwrap());
-    if let Some(temperature) = weather.random_temp() {
-        if !dry_run && !REGEX.is_match(mission) {
-            return Err(anyhow!("Could not find temperature key in mission file"));
-        }
-        println!("   Temperature:  {:.2}", temperature);
-        Ok(REGEX.replace(mission, |cap: &Captures| {
-            format!("{} = {:.2},", &cap[1], temperature)
-        }))
-    } else {
-        Ok(Cow::Borrowed(mission))
-    }
-}
-
-fn modify_qnh<'a>(mission: &'a str, weather: &Weather, dry_run: bool) -> Result<Cow<'a, str>> {
-    static REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(\["qnh"\]) = [\d\.]+,"#).unwrap());
-    if let Some(qnh) = weather.random_qnh() {
-        if !dry_run && !REGEX.is_match(mission) {
-            return Err(anyhow!("Could not find QNH key in mission file"));
-        }
-        println!("   QNH:          {:.2}", qnh);
-        Ok(REGEX.replace(mission, |cap: &Captures| {
-            format!("{} = {:.2},", &cap[1], qnh)
-        }))
-    } else {
-        Ok(Cow::Borrowed(mission))
-    }
-}
-
-pub fn modify_weather(mission: String, weather: &Weather, dry_run: bool) -> Result<String> {
-    let mission = modify_cloud_preset(&mission, weather, dry_run)?;
-    let mission = modify_cloud_base(&mission, weather, dry_run)?;
-    let mission = modify_temp(&mission, weather, dry_run)?;
-    let mission = modify_qnh(&mission, weather, dry_run)?;
+) -> Result<String> {
+    let mut wind_ground_speed = 0.0;
+    let mut wind_2000m_speed = 0.0;
+    let mission = clouds::modify_cloud_preset(&mission, preset_name, weather, dry_run)?;
+    let mission = clouds::modify_cloud_base(&mission, weather, dry_run)?;
+    let mission = wind::modify_ground_wind(&mission, weather, &mut wind_ground_speed, dry_run)?;
+    let mission = wind::modify_2000m_wind(
+        &mission,
+        weather,
+        wind_ground_speed,
+        &mut wind_2000m_speed,
+        dry_run,
+    )?;
+    let mission = wind::modify_8000m_wind(&mission, weather, wind_2000m_speed, dry_run)?;
+    let mission = misc::modify_temp(&mission, weather, dry_run)?;
+    let mission = misc::modify_qnh(&mission, weather, dry_run)?;
     Ok(mission.into_owned())
 }

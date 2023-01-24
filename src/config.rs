@@ -4,6 +4,8 @@ use serde_derive::Deserialize;
 use std::{collections::HashMap, fs::File, io::Read};
 use toml::{value::Table, Value};
 
+use crate::flip_heading;
+
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
@@ -16,16 +18,37 @@ pub struct Config {
 pub struct Preset {
     pub weather: Option<Vec<String>>,
     pub time: String,
+
+    #[serde(default)]
+    pub flip_wind: bool,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Weather {
-    pub cloud_preset: String,
+    pub cloud_preset: Option<String>,
     pub cloud_base_min: Option<i32>,
     pub cloud_base_max: Option<i32>,
+
+    pub wind_ground_speed_min: Option<f64>,
+    pub wind_ground_speed_max: Option<f64>,
+    pub wind_ground_heading_min: Option<i32>,
+    pub wind_ground_heading_max: Option<i32>,
+    pub wind_2000m_increase_speed_min: Option<f64>,
+    pub wind_2000m_increase_speed_max: Option<f64>,
+    pub wind_2000m_heading_min: Option<i32>,
+    pub wind_2000m_heading_max: Option<i32>,
+    pub wind_8000m_increase_speed_min: Option<f64>,
+    pub wind_8000m_increase_speed_max: Option<f64>,
+    pub wind_8000m_heading_min: Option<i32>,
+    pub wind_8000m_heading_max: Option<i32>,
+
+    #[serde(default)]
+    pub wind_flip_chance: f64,
+
     pub temp_min: Option<f64>,
     pub temp_max: Option<f64>,
+
     pub qnh_min: Option<f64>,
     pub qnh_max: Option<f64>,
 
@@ -34,13 +57,20 @@ pub struct Weather {
 
     #[serde(default)]
     pub inherit: Vec<String>,
+
+    #[serde(skip_serializing, default)]
+    pub is_wind_flipped: bool,
 }
 
 fn default_weight() -> f64 {
     1.0
 }
 
+// TODO: generate most of this with a macro
 impl Weather {
+    pub fn randomize_wind_flip(&mut self) {
+        self.is_wind_flipped = thread_rng().gen_bool(self.wind_flip_chance);
+    }
     pub fn random_cloud_base(&self) -> Option<i32> {
         match (self.cloud_base_min, self.cloud_base_max) {
             (None, None) => None,
@@ -73,7 +103,7 @@ impl Weather {
             (Some(min), Some(max)) => Some(thread_rng().gen_range(min..=max)),
         }
     }
-    pub fn random_wind_heading_ground(&self) -> Option<f64> {
+    pub fn random_wind_heading_ground(&self) -> Option<i32> {
         let mut hdg = match (self.wind_ground_heading_min, self.wind_ground_heading_max) {
             (None, None) => None,
             (None, max) => max,
@@ -81,7 +111,53 @@ impl Weather {
             (Some(min), Some(max)) => Some(thread_rng().gen_range(min..=max)),
         };
         if self.is_wind_flipped {
-            hdg = hdg.map(|hdg| (hdg + 180.0) % 360.0);
+            hdg = hdg.map(flip_heading);
+        }
+        hdg
+    }
+    pub fn random_wind_speed_2000m(&self, wind_ground_speed: f64) -> Option<f64> {
+        match (
+            self.wind_2000m_increase_speed_min,
+            self.wind_2000m_increase_speed_max,
+        ) {
+            (None, None) => None,
+            (None, max) => max.map(|x| wind_ground_speed + x),
+            (min, None) => min.map(|x| wind_ground_speed + x),
+            (Some(min), Some(max)) => Some(wind_ground_speed + thread_rng().gen_range(min..=max)),
+        }
+    }
+    pub fn random_wind_heading_2000m(&self) -> Option<i32> {
+        let mut hdg = match (self.wind_2000m_heading_min, self.wind_2000m_heading_max) {
+            (None, None) => None,
+            (None, max) => max,
+            (min, None) => min,
+            (Some(min), Some(max)) => Some(thread_rng().gen_range(min..=max)),
+        };
+        if self.is_wind_flipped {
+            hdg = hdg.map(flip_heading);
+        }
+        hdg
+    }
+    pub fn random_wind_speed_8000m(&self, wind_2000m_speed: f64) -> Option<f64> {
+        match (
+            self.wind_8000m_increase_speed_min,
+            self.wind_8000m_increase_speed_max,
+        ) {
+            (None, None) => None,
+            (None, max) => max.map(|x| wind_2000m_speed + x),
+            (min, None) => min.map(|x| wind_2000m_speed + x),
+            (Some(min), Some(max)) => Some(wind_2000m_speed + thread_rng().gen_range(min..=max)),
+        }
+    }
+    pub fn random_wind_heading_8000m(&self) -> Option<i32> {
+        let mut hdg = match (self.wind_8000m_heading_min, self.wind_8000m_heading_max) {
+            (None, None) => None,
+            (None, max) => max,
+            (min, None) => min,
+            (Some(min), Some(max)) => Some(thread_rng().gen_range(min..=max)),
+        };
+        if self.is_wind_flipped {
+            hdg = hdg.map(flip_heading);
         }
         hdg
     }

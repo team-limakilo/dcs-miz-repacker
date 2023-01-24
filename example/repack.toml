@@ -9,6 +9,7 @@ weather = ["light_scattered_1", "light_scattered_2",
 
 [preset.afternoon]
 time = "14:00"
+flip_wind = true
 weather = ["light_scattered_1", "light_scattered_2",
     "high_scattered_1", "high_scattered_2", "high_scattered_3",
     "scattered_1", "scattered_2", "scattered_3", "scattered_4", "scattered_5", "scattered_6", "scattered_7",
@@ -16,15 +17,45 @@ weather = ["light_scattered_1", "light_scattered_2",
     "overcast_1", "overcast_2", "overcast_3", "overcast_4", "overcast_5", "overcast_6", "overcast_7",
     "overcast_and_rain_1", "overcast_and_rain_2", "overcast_and_rain_3"]
 
-# Cloud bases are randomized, and some ranges have been adjusted,
-# but the comments include the minimum and maximum values allowed by DCS.
+[weather.wind_default]
+wind_ground_speed_min = 0.5
+wind_ground_speed_max = 5
+wind_ground_heading_min = 70
+wind_ground_heading_max = 90
+wind_2000m_increase_speed_min = 3
+wind_2000m_increase_speed_max = 10
+wind_2000m_heading_min = 95
+wind_2000m_heading_max = 165
+wind_8000m_increase_speed_min = 1
+wind_8000m_increase_speed_max = 5
+wind_8000m_heading_min = 155
+wind_8000m_heading_max = 265
+# 0 to 1, percentage chance of all wind directions being turned 180°
+wind_flip_chance = 0.0
 
-# Weight is the chance of getting each weather preset compared to others,
-# and a weight of 0 disables it.
+[weather.wind_strong]
+wind_ground_speed_min = 2.5
+wind_ground_speed_max = 10
+wind_ground_heading_min = 65
+wind_ground_heading_max = 95
+wind_2000m_increase_speed_min = 5
+wind_2000m_increase_speed_max = 10
+wind_2000m_heading_min = 95
+wind_2000m_heading_max = 165
+wind_8000m_increase_speed_min = 5
+wind_8000m_increase_speed_max = 10
+wind_8000m_heading_min = 155
+wind_8000m_heading_max = 265
+wind_flip_chance = 0.0
+
+# The comments near the cloud bases are the minimum and maximum values allowed by DCS.
+
+# Weight is the chance of getting each weather preset relative to others, a weight of 0 disables it.
 
 # Few Scattered Clouds
 # METAR:FEW/SCT 7/8
 [weather.light_scattered_1]
+inherit = ["wind_default"]
 cloud_preset = "Preset1"
 cloud_base_min = 1500 # Min 840
 cloud_base_max = 4200 # Max 4200
@@ -37,6 +68,7 @@ weight = 2
 # Two Layers Few and Scattered
 # METAR:FEW/SCT 8/10 SCT 23/24
 [weather.light_scattered_2]
+inherit = ["wind_default"]
 cloud_preset = "Preset2"
 cloud_base_min = 1500 # Min 1260
 cloud_base_max = 2520 # Max 2520
@@ -49,6 +81,7 @@ weight = 2
 # Two Layer Scattered
 # METAR:SCT 8/9 FEW 21
 [weather.high_scattered_1]
+inherit = ["wind_default"]
 cloud_preset = "Preset3"
 cloud_base_min = 1500 # Min 840
 cloud_base_max = 2520 # Max 2520
@@ -61,6 +94,7 @@ weight = 2
 # Two Layer Scattered
 # METAR:SCT 8/10 FEW/SCT 24/26
 [weather.high_scattered_2]
+inherit = ["wind_default"]
 cloud_preset = "Preset4"
 cloud_base_min = 1260 # Min 1260
 cloud_base_max = 2520 # Max 2520
@@ -73,6 +107,7 @@ weight = 2
 # Three Layer High altitude Scattered
 # METAR:SCT 14/17 FEW 27/29 BKN 40
 [weather.scattered_1]
+inherit = ["wind_default"]
 cloud_preset = "Preset5"
 cloud_base_min = 1260 # Min 1260
 cloud_base_max = 4620 # Max 4620
@@ -85,6 +120,7 @@ weight = 2
 # One Layer Scattered/Broken
 # METAR:SCT/BKN 8/10 FEW 40
 [weather.scattered_2]
+inherit = ["wind_default"]
 cloud_preset = "Preset6"
 cloud_base_min = 1260 # Min 1260
 cloud_base_max = 4200 # Max 4200
@@ -97,6 +133,7 @@ weight = 1
 # Two Layer Scattered/Broken
 # METAR:BKN 7.5/12 SCT/BKN 21/23 SCT 40
 [weather.scattered_3]
+inherit = ["wind_default"]
 cloud_preset = "Preset7"
 cloud_base_min = 1680 # Min 1680
 cloud_base_max = 5040 # Max 5040
@@ -109,6 +146,7 @@ weight = 1
 # Two Layer Scattered/Broken High Altitude
 # METAR:SCT/BKN 18/20 FEW 36/38 FEW 40
 [weather.high_scattered_3]
+inherit = ["wind_default"]
 cloud_preset = "Preset8"
 cloud_base_min = 3780 # Min 3780
 cloud_base_max = 5460 # Max 5460
@@ -121,6 +159,7 @@ weight = 1
 # Two Layer Broken/Scattered
 # METAR:BKN 7.5/10 SCT 20/22 FEW41
 [weather.scattered_4]
+inherit = ["wind_default"]
 cloud_preset = "Preset9"
 cloud_base_min = 1680 # Min 1680
 cloud_base_max = 3780 # Max 3780
@@ -133,6 +172,7 @@ weight = 1
 # Two Layers Scattered Large Thick Clouds
 # METAR:SCT/BKN 18/20 FEW36/38 FEW 40
 [weather.scattered_5]
+inherit = ["wind_default"]
 cloud_preset = "Preset10"
 cloud_base_min = 1500 # Min 1260
 cloud_base_max = 4200 # Max 4200
@@ -145,6 +185,7 @@ weight = 1
 # Two Layers Scattered Large Clouds High Ceiling
 # METAR:BKN 18/20 BKN 32/33 FEW 41
 [weather.scattered_6]
+inherit = ["wind_default"]
 cloud_preset = "Preset11"
 cloud_base_min = 2520 # Min 2520
 cloud_base_max = 5460 # Max 5460
@@ -157,6 +198,7 @@ weight = 1
 # Two Layers Scattered Large Clouds High Ceiling
 # METAR:BKN 12/14 SCT 22/23 FEW 41
 [weather.scattered_7]
+inherit = ["wind_default"]
 cloud_preset = "Preset12"
 cloud_base_min = 1680 # Min 1680
 cloud_base_max = 3360 # Max 3360
@@ -169,6 +211,7 @@ weight = 1
 # Two Layers Broken Clouds
 # METAR:BKN 12/14 BKN 26/28 FEW 41
 [weather.broken_1]
+inherit = ["wind_default"]
 cloud_preset = "Preset13"
 cloud_base_min = 1680 # Min 1680
 cloud_base_max = 3360 # Max 3360
@@ -181,6 +224,7 @@ weight = 0.5
 # Broken Thick Low Layer with Few High Layer
 # METAR:BKN LYR 7/16 FEW 41
 [weather.broken_2]
+inherit = ["wind_default"]
 cloud_preset = "Preset14"
 cloud_base_min = 1680 # Min 1680
 cloud_base_max = 3360 # Max 3360
@@ -193,6 +237,7 @@ weight = 0.5
 # Two Layers Broken Large Clouds
 # METAR:SCT/BKN 14/18 BKN 24/27 FEW 40
 [weather.broken_3]
+inherit = ["wind_default"]
 cloud_preset = "Preset15"
 cloud_base_min = 1500 # Min 840
 cloud_base_max = 5040 # Max 5040
@@ -205,6 +250,7 @@ weight = 0.5
 # Two Layers Broken Large Clouds
 # METAR:BKN 14/18 BKN 28/30 FEW 40
 [weather.broken_4]
+inherit = ["wind_default"]
 cloud_preset = "Preset16"
 cloud_base_min = 1500 # Min 1260
 cloud_base_max = 4200 # Max 4200
@@ -217,6 +263,7 @@ weight = 0.5
 # Three Layers Broken/Overcast
 # METAR:BKN/OVC LYR 7/13 20/22 32/34
 [weather.broken_5]
+inherit = ["wind_default"]
 cloud_preset = "Preset17"
 cloud_base_min = 1500 # Min 0
 cloud_base_max = 2520 # Max 2520
@@ -229,6 +276,7 @@ weight = 0.5
 # Three Layers Broken/Overcast
 # METAR:BKN/OVC LYR 13/15 25/29 38/41
 [weather.broken_6]
+inherit = ["wind_default"]
 cloud_preset = "Preset18"
 cloud_base_min = 1500 # Min 0
 cloud_base_max = 3780 # Max 3780
@@ -241,6 +289,7 @@ weight = 0.5
 # Three Layers Overcast At Low Level
 # METAR:OVC 9/16 BKN/OVC LYR 23/24 31/33
 [weather.broken_7]
+inherit = ["wind_strong"]
 cloud_preset = "Preset19"
 cloud_base_min = 1500 # Min 0
 cloud_base_max = 2940 # Max 2940
@@ -253,6 +302,7 @@ weight = 0.5
 # Three Layers Overcast Low Level
 # METAR:BKN/OVC 13/18 BKN 28/30 SCT FEW 38
 [weather.broken_8]
+inherit = ["wind_strong"]
 cloud_preset = "Preset20"
 cloud_base_min = 1500 # Min 0
 cloud_base_max = 3780 # Max 3780
@@ -265,6 +315,7 @@ weight = 0.5
 # Overcast low level
 # METAR:BKN/OVC LYR 7/8 17/19
 [weather.overcast_1]
+inherit = ["wind_strong"]
 cloud_preset = "Preset21"
 cloud_base_min = 1500 # Min 1260
 cloud_base_max = 4200 # Max 4200
@@ -277,6 +328,7 @@ weight = 0.5
 # Overcast low Level
 # METAR:BKN LYR 7/10 17/20
 [weather.overcast_2]
+inherit = ["wind_strong"]
 cloud_preset = "Preset22"
 cloud_base_min = 1500 # Min 420
 cloud_base_max = 4200 # Max 4200
@@ -289,6 +341,7 @@ weight = 0.5
 # Three Layer Broken Low Level Scattered High
 # METAR:BKN LYR 11/14 18/25 SCT 32/35
 [weather.overcast_3]
+inherit = ["wind_strong"]
 cloud_preset = "Preset23"
 cloud_base_min = 1500 # Min 840
 cloud_base_max = 3360 # Max 3360
@@ -301,6 +354,7 @@ weight = 1
 # Three Layer Overcast
 # METAR:BKN/OVC 3/7 17/22 BKN 34
 [weather.overcast_4]
+inherit = ["wind_strong"]
 cloud_preset = "Preset24"
 cloud_base_min = 1500 # Min 420 
 cloud_base_max = 2520 # Max 2520
@@ -313,6 +367,7 @@ weight = 0.5
 # Three Layer Overcast
 # METAR:OVC LYR 12/14 22/25 40/42
 [weather.overcast_5]
+inherit = ["wind_strong"]
 cloud_preset = "Preset25"
 cloud_base_min = 1500 # Min 420
 cloud_base_max = 3360 # Max 3360
@@ -325,6 +380,7 @@ weight = 0.5
 # Three Layer Overcast
 # METAR:OVC 9/15 BKN 23/25 SCT 32
 [weather.overcast_6]
+inherit = ["wind_strong"]
 cloud_preset = "Preset26"
 cloud_base_min = 1500 # Min 420
 cloud_base_max = 2940 # Max 2940
@@ -337,6 +393,7 @@ weight = 0.5
 # Three Layer Overcast
 # METAR:OVC 8/15 SCT/BKN 25/26 34/36
 [weather.overcast_7]
+inherit = ["wind_strong"]
 cloud_preset = "Preset27"
 cloud_base_min = 1500 # Min 420
 cloud_base_max = 2520 # Max 2520
@@ -349,6 +406,7 @@ weight = 0.5
 # Overcast with Rain
 # METAR:VIS 3-5KM RA OVC 3/15 28/30 FEW 40
 [weather.overcast_and_rain_1]
+inherit = ["wind_strong"]
 cloud_preset = "RainyPreset1"
 cloud_base_min = 2940 # Min 420
 cloud_base_max = 2940 # Max 2940
@@ -361,6 +419,7 @@ weight = 1
 # Overcast with Rain
 # METAR:VIS 1-5KM RA BKN/OVC 3/11 SCT 18/29 FEW 40
 [weather.overcast_and_rain_2]
+inherit = ["wind_strong"]
 cloud_preset = "RainyPreset2"
 cloud_base_min = 2520 # Min 840
 cloud_base_max = 2520 # Max 2520
@@ -373,6 +432,7 @@ weight = 0.5
 # Overcast with Rain
 # METAR:VIS 3-5KM RA OVC LYR 6/18 19/21 SCT 34
 [weather.overcast_and_rain_3]
+inherit = ["wind_strong"]
 cloud_preset = "RainyPreset3"
 cloud_base_min = 2520 # Min 840
 cloud_base_max = 2520 # Max 2520
