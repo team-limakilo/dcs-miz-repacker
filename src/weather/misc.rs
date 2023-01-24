@@ -12,7 +12,7 @@ pub fn modify_temp<'a>(mission: &'a str, weather: &Weather, dry_run: bool) -> Re
         if !dry_run && !REGEX.is_match(mission) {
             return Err(anyhow!("Could not find temperature key in mission file"));
         }
-        println!("   Temperature:           {:.2}", temperature);
+        println!("   Temperature:           {:.2} °C", temperature);
         Ok(REGEX.replace(mission, |cap: &Captures| {
             format!("{} = {:.2},", &cap[1], temperature)
         }))
@@ -28,7 +28,7 @@ pub fn modify_qnh<'a>(mission: &'a str, weather: &Weather, dry_run: bool) -> Res
         if !dry_run && !REGEX.is_match(mission) {
             return Err(anyhow!("Could not find QNH key in mission file"));
         }
-        println!("   QNH:                   {:.2}", qnh);
+        println!("   QNH:                   {:.2} mmHg", qnh);
         Ok(REGEX.replace(mission, |cap: &Captures| {
             format!("{} = {:.2},", &cap[1], qnh)
         }))

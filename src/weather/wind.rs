@@ -37,7 +37,7 @@ pub fn modify_ground_wind<'a>(
                 "Could not find ground wind speed key in mission file"
             ));
         }
-        println!("   Ground wind speed:     {:.1}", wind_speed);
+        println!("   Ground wind speed:     {:.1} m/s", wind_speed);
         let new_mission = SPEED_REGEX.replace(&mission, |cap: &Captures| {
             format!("{} = {},", &cap[1], wind_speed)
         });
@@ -52,7 +52,7 @@ pub fn modify_ground_wind<'a>(
                 "Could not find ground wind direction key in mission file"
             ));
         }
-        println!("   Ground wind heading:   {}", wind_heading);
+        println!("   Ground wind heading:   {}°", wind_heading);
         let new_mission = HEADING_REGEX.replace(&mission, |cap: &Captures| {
             format!("{} = {},", &cap[1], wind_heading)
         });
@@ -81,7 +81,7 @@ pub fn modify_2000m_wind<'a>(
                 "Could not find 2000m wind speed key in mission file"
             ));
         }
-        println!("   2000m wind speed:      {:.1}", wind_speed);
+        println!("   2000m wind speed:      {:.1} m/s", wind_speed);
         let new_mission = SPEED_REGEX.replace(&mission, |cap: &Captures| {
             format!("{} = {},", &cap[1], wind_speed)
         });
@@ -96,7 +96,7 @@ pub fn modify_2000m_wind<'a>(
                 "Could not find 2000m wind direction key in mission file"
             ));
         }
-        println!("   2000m wind heading:    {}", wind_heading);
+        println!("   2000m wind heading:    {}°", wind_heading);
         let new_mission = HEADING_REGEX.replace(&mission, |cap: &Captures| {
             format!("{} = {},", &cap[1], wind_heading)
         });
@@ -124,7 +124,7 @@ pub fn modify_8000m_wind<'a>(
                 "Could not find 8000m wind speed key in mission file"
             ));
         }
-        println!("   8000m wind speed:      {:.1}", wind_speed);
+        println!("   8000m wind speed:      {:.1} m/s", wind_speed);
         let new_mission = SPEED_REGEX.replace(&mission, |cap: &Captures| {
             format!("{} = {},", &cap[1], wind_speed)
         });
@@ -138,7 +138,7 @@ pub fn modify_8000m_wind<'a>(
                 "Could not find 8000m wind direction key in mission file"
             ));
         }
-        println!("   8000m wind heading:    {}", wind_heading);
+        println!("   8000m wind heading:    {}°", wind_heading);
         let new_mission = HEADING_REGEX.replace(&mission, |cap: &Captures| {
             format!("{} = {},", &cap[1], wind_heading)
         });

@@ -38,7 +38,7 @@ pub fn modify_cloud_base<'a>(
         if !dry_run && !REGEX.is_match(mission) {
             return Err(anyhow!("Could not find cloud base key in mission file"));
         }
-        println!("   Cloud base:            {}", cloud_base);
+        println!("   Cloud base:            {} meters", cloud_base);
         Ok(REGEX.replace(mission, |cap: &Captures| {
             format!("{} = {},", &cap[1], cloud_base)
         }))
