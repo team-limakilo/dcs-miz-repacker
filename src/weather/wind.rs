@@ -13,7 +13,7 @@ macro_rules! wind_regex {
                 r#""\] =.+?"#,
                 r#"\n\s{16}\[""#,
                 $attribute,
-                r#""\]) = \d+,"#
+                r#""\]) = [\d\.]+,"#
             );
             Regex::new(&regex_str).unwrap()
         })

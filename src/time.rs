@@ -7,7 +7,7 @@ pub fn modify_time(mission: &str, preset: &Preset, dry_run: bool) -> Result<Stri
     // Note: we HAVE to replace the entry that is indented by exactly 4 spaces, because
     // there are other keys named "start_time" which we DON'T want to replace.
     static REGEX: Lazy<Regex> = Lazy::new(|| {
-        RegexBuilder::new(r#"^(    \["start_time"\]) = \d+,$"#)
+        RegexBuilder::new(r#"^(    \["start_time"\]) = [\d\.]+,$"#)
             .multi_line(true)
             .build()
             .unwrap()
@@ -41,7 +41,10 @@ pub fn modify_time(mission: &str, preset: &Preset, dry_run: bool) -> Result<Stri
             return Err(anyhow!("Could not find start_time key in mission file"));
         }
 
-        println!("   Start time:            {:02}:{:02}:{:02}", hours, minutes, seconds);
+        println!(
+            "   Start time:            {:02}:{:02}:{:02}",
+            hours, minutes, seconds
+        );
         Ok(REGEX
             .replace(mission, |cap: &Captures| {
                 // And de-normalize it back into seconds

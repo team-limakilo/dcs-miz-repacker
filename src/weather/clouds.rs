@@ -32,7 +32,7 @@ pub fn modify_cloud_base<'a>(
     weather: &Weather,
     dry_run: bool,
 ) -> Result<Cow<'a, str>> {
-    static REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(\["base"\]) = \d+,"#).unwrap());
+    static REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(\["base"\]) = [\d\.]+,"#).unwrap());
 
     if let Some(cloud_base) = weather.random_cloud_base() {
         if !dry_run && !REGEX.is_match(mission) {
