@@ -211,8 +211,6 @@ struct Args {
 fn run(miz_path: &Option<String>, dry_run: bool) -> Result<()> {
     let config = read_config().context("Failed to read configuration from repack.toml")?;
 
-    println!("{config:#?}");
-
     if dry_run {
         return repack_miz("dry run", config, true);
     }
