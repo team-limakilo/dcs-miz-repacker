@@ -56,7 +56,7 @@ fn add_file(
 ) -> Result<()> {
     let path = &path.replace('\\', "/");
     if !added_files.contains(path) {
-        zip.start_file(path, FileOptions::default())?;
+        zip.start_file(path, FileOptions::default().compression_level(Some(9)))?;
         added_files.insert(path.to_owned());
         io::copy(data, zip)?;
     }
@@ -167,7 +167,7 @@ fn repack_miz(path: &str, mut config: Config, dry_run: bool) -> Result<()> {
     }
 
     if !dry_run {
-        println!("Writing current path to most recently accessed file...");
+        println!("Writing current path to \"most recently accessed\" file...");
         let mut recent_file = File::create(recent_file_path()?)?;
         write!(recent_file, "{}", Path::new(path).canonicalize()?.display())?;
         recent_file.flush()?;
