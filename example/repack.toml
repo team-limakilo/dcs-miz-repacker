@@ -1,3 +1,6 @@
+[misc]
+remove_required_modules = true
+
 [preset.morning]
 time = "06:00"
 weather = ["light_scattered_1", "light_scattered_2",

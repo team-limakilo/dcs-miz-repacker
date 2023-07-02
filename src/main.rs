@@ -1,8 +1,9 @@
 mod config;
+mod misc;
 mod time;
 mod weather;
 
-use crate::{time::modify_time, weather::modify_weather};
+use crate::{misc::remove_required_modules, time::modify_time, weather::modify_weather};
 use anyhow::{anyhow, Context, Result};
 use clap::Parser;
 use config::{read_config, Config};
@@ -106,8 +107,9 @@ fn repack_miz(path: &str, mut config: Config, dry_run: bool) -> Result<()> {
             .read_to_string(&mut mission)?;
     }
 
-    // Un-mut the value to avoid accidental changes
-    let mission = mission;
+    if config.misc.remove_required_modules {
+        mission = remove_required_modules(&mission, dry_run)?;
+    }
 
     for (name, preset) in &config.preset {
         let new_path = splice_filename(path, name, dry_run)?;

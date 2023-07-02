@@ -6,10 +6,14 @@ This is a small Rust application with the following goals:
 * Ability to repack custom mission files that DCS does not keep between re-saves (ie. spectator camera settings)
 * Ability to configure random weather settings with weighted distribution
 * Robust error handling, with readable error messages but also allowing automated runs from other scripts (ie. server restarter)
+* Removing required modules from the miz (to make mods such as the A-4E not required to join servers)
+
+Experimental features:
+
+* Randomized wind values
 
 What is not supported yet:
 
-* Changing wind values
 * Dynamic weather settings (waiting for ED's implementation)
 
 ## Usage

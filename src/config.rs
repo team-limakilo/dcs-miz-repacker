@@ -9,8 +9,16 @@ use crate::flip_heading;
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
+    pub misc: MiscOptions,
     pub preset: HashMap<String, Preset>,
     pub weather: HashMap<String, Weather>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MiscOptions {
+    #[serde(default)]
+    pub remove_required_modules: bool,
 }
 
 #[derive(Debug, Deserialize)]
