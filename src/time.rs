@@ -13,23 +13,26 @@ pub fn modify_time(mission: &str, preset: &Preset, dry_run: bool) -> Result<Stri
             .unwrap()
     });
 
-    let mut time = preset.time.splitn(3, ':');
-    if true {
+    let time: Vec<&str> = preset.time.split(':').collect();
+
+    if time.is_empty() || time.len() > 3 {
+        Err(anyhow!("Invalid time format: {}", preset.time))
+    } else {
         let mut hours: i32 = time
-            .next()
-            .map(str::parse)
-            .ok_or_else(|| anyhow!("Time is empty"))?
-            .context(format!("cannot read hours from time {}", preset.time))?;
+            .first()
+            .map(|hours| hours.parse())
+            .unwrap()
+            .context(format!("cannot read hours from time: '{}'", preset.time))?;
         let mut minutes: i32 = time
-            .next()
-            .map(str::parse)
+            .get(1)
+            .map(|minutes| minutes.parse())
             .unwrap_or(Ok(0))
-            .context(format!("cannot read minutes from time {}", preset.time))?;
+            .context(format!("cannot read minutes from time: '{}'", preset.time))?;
         let mut seconds: i32 = time
-            .next()
-            .map(str::parse)
+            .get(2)
+            .map(|seconds| seconds.parse())
             .unwrap_or(Ok(0))
-            .context(format!("cannot read seconds from time {}", preset.time))?;
+            .context(format!("cannot read seconds from time: '{}'", preset.time))?;
 
         // Normalize the time value by allowing overflow
         minutes += seconds / 60;
@@ -37,6 +40,7 @@ pub fn modify_time(mission: &str, preset: &Preset, dry_run: bool) -> Result<Stri
         hours += minutes / 60;
         minutes %= 60;
         hours %= 24;
+
         if !dry_run && !REGEX.is_match(mission) {
             return Err(anyhow!("Could not find start_time key in mission file"));
         }
@@ -51,7 +55,5 @@ pub fn modify_time(mission: &str, preset: &Preset, dry_run: bool) -> Result<Stri
                 format!("{} = {},", &cap[1], hours * 3600 + minutes * 60 + seconds)
             })
             .into_owned())
-    } else {
-        Err(anyhow!("Invalid time format: {}", preset.time))
     }
 }

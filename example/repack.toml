@@ -1,5 +1,5 @@
 [preset.morning]
-time = "6:00"
+time = "06:00"
 weather = ["light_scattered_1", "light_scattered_2",
     "high_scattered_1", "high_scattered_2", "high_scattered_3",
     "scattered_1", "scattered_2", "scattered_3", "scattered_4", "scattered_5", "scattered_6", "scattered_7",
