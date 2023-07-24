@@ -182,41 +182,50 @@ pub fn read_config() -> Result<Config> {
     Ok(config_data.try_into()?)
 }
 
-fn preprocess_inheritance(config_data: Value) -> Result<Value> {
-    let mut new_data = config_data.clone();
+fn preprocess_inheritance(mut config_data: Value) -> Result<Value> {
     if let Some(presets) = config_data
-        .get("weather")
-        .and_then(|weather_data| weather_data.as_table())
+        .get_mut("weather")
+        .and_then(|weather_data| weather_data.as_table_mut())
     {
-        for (preset_name, preset) in presets {
+        let mut inheritance_pairs: Vec<(String, String)> = Vec::new();
+
+        // List out all presets and their inherited presets
+        for (preset_name, preset) in presets.iter() {
             if let Some(inherits) = preset.get("inherit").and_then(|inherit| inherit.as_array()) {
-                for inherit in inherits {
-                    if let Some(inherited_name) = inherit.as_str() {
-                        let preset = preset.as_table().unwrap();
-                        let inherited = presets.get(inherited_name)
-                            .with_context(|| format!("Preset '{preset_name}' tries to inherit values from '{inherited_name}', but the referenced preset does not exist"))?
-                            .as_table().with_context(|| format!("Preset '{preset_name}' tries to inherit values from '{inherited_name}', but it is not a table"))?;
-
-                        let new_preset = merge_tables(inherited, preset);
-
-                        new_data
-                            .get_mut("weather")
-                            .unwrap()
-                            .as_table_mut()
-                            .unwrap()
-                            .insert(preset_name.clone(), new_preset.into());
-                    }
+                for inherit in dbg!(inherits) {
+                    inheritance_pairs
+                        .push((preset_name.clone(), inherit.as_str().unwrap().to_owned()));
                 }
             }
         }
+
+        // Replace them in the presets map
+        for (preset_name, inherited_name) in inheritance_pairs {
+            let preset = presets
+                .get(&preset_name)
+                .unwrap()
+                .as_table()
+                .unwrap()
+                .clone();
+
+            let inherited_values = presets.get(&inherited_name)
+                .with_context(|| format!("Preset '{preset_name}' tries to inherit values from '{inherited_name}', but the referenced preset does not exist"))?
+                .as_table().with_context(|| format!("Preset '{preset_name}' tries to inherit values from '{inherited_name}', but it is not a table"))?;
+
+            presets.insert(
+                preset_name,
+                Value::Table(merge_tables(preset, inherited_values)),
+            );
+        }
     }
-    Ok(new_data)
+
+    Ok(config_data)
 }
 
-fn merge_tables(destination: &Table, target: &Table) -> Table {
-    let mut result = target.clone();
-    for (key, value) in destination {
-        result.insert(key.clone(), value.clone());
+fn merge_tables(mut destination: Table, source: &Table) -> Table {
+    for (key, value) in source {
+        println!("merge ({key:?}, {value:?}");
+        destination.insert(key.clone(), value.clone());
     }
-    result
+    dbg!(destination)
 }
