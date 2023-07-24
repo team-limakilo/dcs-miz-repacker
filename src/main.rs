@@ -263,6 +263,7 @@ fn pause_and_exit(code: i32, batch: bool) -> ! {
     terminal::enable_raw_mode().unwrap();
     loop {
         if let Event::Key(_) = event::read().unwrap() {
+            terminal::disable_raw_mode().unwrap();
             exit(code);
         }
     }
