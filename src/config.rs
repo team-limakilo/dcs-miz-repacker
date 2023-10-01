@@ -192,7 +192,7 @@ fn preprocess_inheritance(mut config_data: Value) -> Result<Value> {
         // List out all presets and their inherited presets
         for (preset_name, preset) in presets.iter() {
             if let Some(inherits) = preset.get("inherit").and_then(|inherit| inherit.as_array()) {
-                for inherit in dbg!(inherits) {
+                for inherit in inherits {
                     inheritance_pairs
                         .push((preset_name.clone(), inherit.as_str().unwrap().to_owned()));
                 }
@@ -224,8 +224,7 @@ fn preprocess_inheritance(mut config_data: Value) -> Result<Value> {
 
 fn merge_tables(mut destination: Table, source: &Table) -> Table {
     for (key, value) in source {
-        println!("merge ({key:?}, {value:?}");
         destination.insert(key.clone(), value.clone());
     }
-    dbg!(destination)
+    destination
 }
