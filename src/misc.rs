@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex, RegexBuilder};
 
@@ -18,9 +18,10 @@ pub fn remove_required_modules(mission: &str, dry_run: bool) -> Result<String> {
     });
 
     if !dry_run && !REGEX.is_match(mission) {
-        return Err(anyhow!(
-            "Could not find requiredModules table in mission file"
-        ));
+        println!(
+            "?> The mission does not seem to have a requiredModules table, skipping its removal."
+        );
+        return Ok(mission.to_owned());
     }
 
     Ok(REGEX
