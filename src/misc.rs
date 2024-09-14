@@ -2,6 +2,8 @@ use anyhow::Result;
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex, RegexBuilder};
 
+pub const INDENT: &str = r#"(:?    |\t)"#;
+
 const REQUIRED_MODULES_REGEX: &str = concat! {
     r#"(\["requiredModules"\] = \n)"#,
     r#"(\s+\{\n)"#,
@@ -19,7 +21,7 @@ pub fn remove_required_modules(mission: &str, dry_run: bool) -> Result<String> {
 
     if !dry_run && !REGEX.is_match(mission) {
         println!(
-            "?> The mission does not seem to have a requiredModules table, skipping its removal."
+            "?> The mission does not seem to have a requiredModules table, no need to remove it..."
         );
         return Ok(mission.to_owned());
     }

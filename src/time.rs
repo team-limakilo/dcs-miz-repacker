@@ -1,4 +1,4 @@
-use crate::config::Preset;
+use crate::{config::Preset, misc::INDENT};
 use anyhow::{anyhow, Context, Result};
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex, RegexBuilder};
@@ -7,7 +7,7 @@ pub fn modify_time(mission: &str, preset: &Preset, dry_run: bool) -> Result<Stri
     // Note: we HAVE to replace the entry that is indented by exactly 4 spaces, because
     // there are other keys named "start_time" which we DON'T want to replace.
     static REGEX: Lazy<Regex> = Lazy::new(|| {
-        RegexBuilder::new(r#"^(    \["start_time"\]) = [\d\.]+,$"#)
+        RegexBuilder::new(&format!(r#"^({INDENT}\["start_time"\]) = [\d\.]+,$"#))
             .multi_line(true)
             .build()
             .unwrap()

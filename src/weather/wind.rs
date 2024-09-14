@@ -7,13 +7,10 @@ use std::borrow::Cow;
 macro_rules! wind_regex {
     ($altitude:literal, $attribute:literal) => {
         Lazy::new(|| {
-            let regex_str = concat!(
-                r#"(?s)(\s{12}\[""#,
-                $altitude,
-                r#""\] =.+?"#,
-                r#"\n\s{16}\[""#,
-                $attribute,
-                r#""\]) = [\d\.]+,"#
+            use crate::misc::INDENT;
+            let regex_str = format!(
+                r#"(?s)({INDENT}{{3}}\["{}"\] =.+?\n{INDENT}{{4}}\["{}"\]) = [\d\.]+,"#,
+                $altitude, $attribute
             );
             Regex::new(&regex_str).unwrap()
         })
@@ -39,7 +36,7 @@ pub fn modify_ground_wind<'a>(
         }
         println!("   Ground wind speed:     {:.1} m/s", wind_speed);
         let new_mission = SPEED_REGEX.replace(&mission, |cap: &Captures| {
-            format!("{} = {},", &cap[1], wind_speed)
+            format!("{} = {:.1},", &cap[1], wind_speed)
         });
 
         *wind_ground_speed = wind_speed;
@@ -83,7 +80,7 @@ pub fn modify_2000m_wind<'a>(
         }
         println!("   2000m wind speed:      {:.1} m/s", wind_speed);
         let new_mission = SPEED_REGEX.replace(&mission, |cap: &Captures| {
-            format!("{} = {},", &cap[1], wind_speed)
+            format!("{} = {:.1},", &cap[1], wind_speed)
         });
 
         *wind_2000m_speed = wind_speed;
@@ -126,7 +123,7 @@ pub fn modify_8000m_wind<'a>(
         }
         println!("   8000m wind speed:      {:.1} m/s", wind_speed);
         let new_mission = SPEED_REGEX.replace(&mission, |cap: &Captures| {
-            format!("{} = {},", &cap[1], wind_speed)
+            format!("{} = {:.1},", &cap[1], wind_speed)
         });
 
         mission = Cow::Owned(new_mission.into_owned());
